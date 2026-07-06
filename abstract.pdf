@@ -1,0 +1,33 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 1660 >>
+stream
+BT /F1 12 Tf 50 740 Td (RecruitHirePro is a web-based recruitment and student placement platform built with) Tj 0 -14 Td (Next.js,) Tj 0 -14 Td (designed to connect students and recruiters through intelligent matching and analytics.) Tj 0 -14 Td (The) Tj 0 -14 Td (system integrates AI-driven features including semantic job-candidate matching powered by) Tj 0 -14 Td (ChromaDB and vector embeddings, an AI chat assistant for applicant guidance, and automated) Tj 0 -14 Td (recommendation generation. The application supports user authentication for students and) Tj 0 -14 Td (recruiters, profile and resume uploads, resume parsing hooks, and secure handling of) Tj 0 -14 Td (identity documents and photos. Recruiters can post and manage job listings, shortlist) Tj 0 -14 Td (candidates, and view analytics on applicant flow and engagement. Students have access to) Tj 0 -14 Td (personalized job recommendations, application tracking, and integrations for connecting) Tj 0 -14 Td (their GitHub for skill verification. The platform's backend leverages a MongoDB datastore) Tj 0 -14 Td (for core entities \(users, jobs, applications\) and Chroma for semantic search and) Tj 0 -14 Td (similarity tasks. Designed for scalability and extensibility, RecruitHirePro provides a) Tj 0 -14 Td (modern UX using Next.js app routes, serverless API endpoints, and modular components to) Tj 0 -14 Td (facilitate rapid iteration. This project demonstrates practical application of ML-enabled) Tj 0 -14 Td (search and recommender systems in recruitment workflows, emphasizing data privacy,) Tj 0 -14 Td (user experience, and actionable analytics for hiring stakeholders.) Tj ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000317 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2029
+%EOF

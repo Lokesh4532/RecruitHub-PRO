@@ -1,0 +1,30 @@
+{
+  // Disable WSL integration to prevent popup
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "remote.WSL.enable": false,
+  "remote.extensionKind": {
+    "ms-vscode-remote.remote-wsl": ["ui"]
+  },
+  
+  // Disable WSL recommendations
+  "extensions.ignoreRecommendations": true,
+  "remote.autoForwardPorts": false,
+  
+  // Python settings
+  "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+  
+  // Format on save
+  "editor.formatOnSave": false,
+  
+  // Auto save
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  
+  // Disable WSL terminal profiles
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell"
+    }
+  }
+}
