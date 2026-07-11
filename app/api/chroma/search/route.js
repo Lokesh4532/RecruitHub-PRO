@@ -89,17 +89,15 @@ export async function GET(request) {
     // Get full student data from MongoDB
     const studentIds = chromaResults.ids;
     
-    if (studentIds.length === 0) {
-      return NextResponse.json({
-        success: true,
-        candidates: [],
-        message: 'No candidates found matching your criteria'
-      });
-    }
+    let students;
 
-    const students = await Student.find({
-      _id: { $in: studentIds }
-    }).populate('user_id');
+    if (studentIds.length === 0) {
+      students = await Student.find().populate('user_id');
+    } else {
+      students = await Student.find({
+        _id: { $in: studentIds }
+      }).populate('user_id');
+    }
 
     // Create a map for quick lookup
     const studentMap = new Map();
@@ -186,16 +184,56 @@ export async function GET(request) {
     );
 
     // Filter out nulls and sort by combined match score
-    const validCandidates = candidatesWithScores
+    let validCandidates = candidatesWithScores
       .filter(c => c !== null)
       .sort((a, b) => b.match_score - a.match_score);
+
+    if (validCandidates.length === 0 && students.length > 0) {
+      validCandidates = students.map((student, index) => {
+        const education = student.resume_parsed_data?.education || {};
+        return {
+          student_id: student._id.toString(),
+          name: student.user_id?.name || 'N/A',
+          email: student.user_id?.email || 'N/A',
+          gpa: education.gpa || 'N/A',
+          gpa_numeric: education.gpa ? parseFloat(education.gpa) : null,
+          graduation_year: education.graduation_year || 'N/A',
+          degree: education.degree || 'N/A',
+          university: education.university || 'N/A',
+          phone: student.phone || 'N/A',
+          linkedin_url: student.linkedin_url || null,
+          current_year: student.current_year || 'N/A',
+          achievements: student.achievements || [],
+          match_score: student.profile_completion || 0,
+          skill_match_score: 0,
+          semantic_score: 0,
+          semantic_distance: 2,
+          retention_score: Math.round(student.retention_score || 50),
+          retention_reasoning: 'Fallback profile listing because semantic search returned no direct matches.',
+          ai_powered: false,
+          skills: student.resume_parsed_data?.skills || [],
+          matched_skills: [],
+          unmatched_skills: [],
+          resume_url: student.resume_url,
+          github_username: student.github_data?.username,
+          github_repos: student.github_data?.repos_count || 0,
+          location: student.location || 'N/A',
+          interests: student.interests || [],
+          chroma_rank: index + 1,
+          profile_completion: student.profile_completion || 0,
+          fallback_used: true
+        };
+      });
+    }
 
     return NextResponse.json({
       success: true,
       candidates: validCandidates,
       total_results: validCandidates.length,
       search_method: 'semantic_chromadb',
-      message: `Found ${validCandidates.length} candidates using semantic search`
+      message: validCandidates.length > 0
+        ? `Found ${validCandidates.length} candidates using semantic search`
+        : 'No candidates found matching your criteria'
     });
 
   } catch (error) {

@@ -36,9 +36,13 @@ export default function NewJob() {
         throw new Error('Failed to start payment');
       }
 
+      if (!orderData.key_id) {
+        throw new Error('Missing Razorpay key id');
+      }
+
       // 2. Open Razorpay Widget
       const options = {
-        key: process.env.NEXT_PUBLIC_KEY_ID, 
+        key: orderData.key_id,
         amount: orderData.order.amount,
         currency: orderData.order.currency,
         name: "RecruitHirePro",

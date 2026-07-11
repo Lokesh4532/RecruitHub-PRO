@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: recruithirepro
+    env: node
+    plan: starter
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.1

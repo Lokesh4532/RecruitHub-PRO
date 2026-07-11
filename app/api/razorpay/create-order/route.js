@@ -19,7 +19,11 @@ export async function POST(request) {
 
     const order = await instance.orders.create(options);
 
-    return NextResponse.json({ success: true, order });
+    return NextResponse.json({
+      success: true,
+      order,
+      key_id: process.env.NEXT_PUBLIC_KEY_ID,
+    });
   } catch (error) {
     console.error('Razorpay order creation failed:', error);
     return NextResponse.json({ success: false, error: 'Failed to create order' }, { status: 500 });

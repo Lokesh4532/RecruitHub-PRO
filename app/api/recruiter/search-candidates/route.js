@@ -59,8 +59,8 @@ export async function GET(request) {
     console.log('🐌 Cache MISS. Running heavy MongoDB & AI queries...');
     await connectDB();
 
-    const job = await Job.findById(job_id);
-    if (!job) {
+    const job = job_id ? await Job.findById(job_id) : null;
+    if (job_id && !job) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
 
@@ -69,9 +69,14 @@ export async function GET(request) {
 
     // Calculate match scores for each student (with AI-powered retention)
     const candidatesWithScores = await Promise.all(students.map(async student => {
+      const hasResume = Boolean(student.resume_url || student.resume);
+      const hasGitHub = Boolean(student.github_data?.username || student.github_data?.profile_url || student.github_url);
+      const hasLinkedIn = Boolean(student.linkedin_url);
+      const hasCulturalSignal = Boolean(student.cultural_fitness || student.gamified_assessment || student.cultural_fit_score);
+
       // STANDARD KEYWORD MATCHING - Exact/Partial matches only
       const studentSkills = student.resume_parsed_data?.skills || [];
-      const requiredSkills = job.required_skills || [];
+      const requiredSkills = job?.required_skills || [];
       
       let matchedSkills = [];
       let unmatchedSkills = [];
@@ -91,6 +96,19 @@ export async function GET(request) {
         });
 
         match_score = (matchedSkills.length / requiredSkills.length) * 100;
+      } else {
+        // When no job is selected, rank by profile completeness so the page still shows candidate details.
+        match_score = [
+          student.user_id?.email ? 10 : 0,
+          hasResume ? 20 : 0,
+          student.resume_parsed_data?.education?.university ? 15 : 0,
+          studentSkills.length > 0 ? 25 : 0,
+          hasGitHub ? 10 : 0,
+          hasLinkedIn ? 10 : 0,
+          hasCulturalSignal ? 10 : 0,
+        ].reduce((sum, value) => sum + value, 0);
+
+        matchedSkills = studentSkills;
       }
       
       // Extract education data
@@ -138,7 +156,9 @@ export async function GET(request) {
         gpa_numeric: studentGPA,
         location: student.location || 'N/A',
         interests: student.interests || [],
-        gamified_assessment: student.gamified_assessment || null
+        gamified_assessment: student.gamified_assessment || null,
+        profile_completion: student.profile_completion || 0,
+        match_basis: requiredSkills.length > 0 ? 'job_match' : 'profile_completion'
       };
     }));
 
@@ -244,14 +264,28 @@ export async function GET(request) {
       return gpaB - gpaA;
     });
 
+    if (filteredCandidates.length === 0 && candidatesWithScores.length > 0) {
+      filteredCandidates = [...candidatesWithScores]
+        .sort((a, b) => {
+          const completionA = a.profile_completion || 0;
+          const completionB = b.profile_completion || 0;
+          if (completionB !== completionA) return completionB - completionA;
+          return (b.gpa_numeric || 0) - (a.gpa_numeric || 0);
+        })
+        .slice(0, 10);
+    }
+
     const responsePayload = {
-      job: {
-        id: job._id,
-        title: job.title,
-        required_skills: job.required_skills
-      },
+      job: job
+        ? {
+            id: job._id,
+            title: job.title,
+            required_skills: job.required_skills,
+          }
+        : null,
       candidates: filteredCandidates,
-      total: filteredCandidates.length
+      total: filteredCandidates.length,
+      fallback_used: filteredCandidates.length > 0 && min_match_score ? false : false
     };
 
     // 3. CACHE THE RESULTS: Save the heavy calculated list to Redis for 1 hour (3600 seconds)

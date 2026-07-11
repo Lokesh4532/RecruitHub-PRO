@@ -53,6 +53,11 @@ export async function GET(request) {
     // Get all applications for this student
     const applications = await Application.find({ student_id: student._id }).populate('job_id');
 
+    const hasResume = Boolean(student.resume_url || student.resume);
+    const hasGitHub = Boolean(student.github_data?.username || student.github_data?.profile_url || student.github_url);
+    const hasLinkedIn = Boolean(student.linkedin_url);
+    const hasCulturalTest = Boolean(student.cultural_fitness || student.gamified_assessment || student.cultural_fit_score);
+
     // PROFILE STRENGTH CALCULATION
     let profileStrength = 0;
     const checklist = [];
@@ -66,7 +71,7 @@ export async function GET(request) {
     }
 
     // Resume (20%)
-    if (student.resume) {
+    if (hasResume) {
       profileStrength += 20;
       checklist.push({ name: 'Resume Uploaded', description: 'Resume is uploaded', completed: true, points: 20 });
     } else {
@@ -91,7 +96,7 @@ export async function GET(request) {
     }
 
     // GitHub (10%)
-    if (student.github_url) {
+    if (hasGitHub) {
       profileStrength += 10;
       checklist.push({ name: 'GitHub Connected', description: 'GitHub profile linked', completed: true, points: 10 });
     } else {
@@ -99,7 +104,7 @@ export async function GET(request) {
     }
 
     // LinkedIn (10%)
-    if (student.linkedin_url) {
+    if (hasLinkedIn) {
       profileStrength += 10;
       checklist.push({ name: 'LinkedIn Connected', description: 'LinkedIn profile linked', completed: true, points: 10 });
     } else {
@@ -107,7 +112,7 @@ export async function GET(request) {
     }
 
     // Cultural Test (10%)
-    if (student.cultural_fit_score) {
+    if (hasCulturalTest) {
       profileStrength += 10;
       checklist.push({ name: 'Cultural Test Done', description: 'Cultural fit assessment complete', completed: true, points: 10 });
     } else {
@@ -169,7 +174,7 @@ export async function GET(request) {
     // RECOMMENDATIONS
     const recommendations = [];
 
-    if (!student.resume) {
+    if (!hasResume) {
       recommendations.push({
         icon: '',
         title: 'Upload Your Resume',
@@ -209,12 +214,22 @@ export async function GET(request) {
       });
     }
 
-    if (!student.github_url) {
+    if (!hasGitHub) {
       recommendations.push({
         icon: '',
         title: 'Connect GitHub',
         description: 'Showcase your projects and code to recruiters',
         action_text: 'Connect',
+        action_link: '/student/profile'
+      });
+    }
+
+    if (!hasLinkedIn) {
+      recommendations.push({
+        icon: '',
+        title: 'Add LinkedIn',
+        description: 'LinkedIn helps recruiters verify your professional profile',
+        action_text: 'Update LinkedIn',
         action_link: '/student/profile'
       });
     }

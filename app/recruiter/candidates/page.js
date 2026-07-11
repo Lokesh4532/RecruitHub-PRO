@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -16,7 +16,6 @@ import AnimatedCyberBackground from '@/components/AnimatedCyberBackground';
 
 export default function RecruiterCandidates() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState('');
   const [candidates, setCandidates] = useState([]);
@@ -46,9 +45,11 @@ export default function RecruiterCandidates() {
   useEffect(() => {
     fetchJobs();
     fetchShortlist();
-    const jobId = searchParams.get('job_id');
+    const jobId = new URLSearchParams(window.location.search).get('job_id');
     if (jobId) {
       setSelectedJob(jobId);
+    } else {
+      searchCandidates();
     }
   }, []);
 
@@ -71,20 +72,21 @@ export default function RecruiterCandidates() {
   };
 
   const searchCandidates = async () => {
-    if (!selectedJob) return;
-
     setLoading(true);
     try {
-      const endpoint = useSemanticSearch ? '/api/chroma/search' : '/api/recruiter/search-candidates';
+      const endpoint = useSemanticSearch && selectedJob ? '/api/chroma/search' : '/api/recruiter/search-candidates';
       
-      const queryParams = new URLSearchParams({
-        job_id: selectedJob,
-        ...Object.fromEntries(
+      const queryParams = new URLSearchParams(
+        Object.fromEntries(
           Object.entries(filters).filter(([_, value]) => value !== '')
         )
-      });
+      );
 
-      if (useSemanticSearch && semanticQuery) {
+      if (selectedJob) {
+        queryParams.set('job_id', selectedJob);
+      }
+
+      if (useSemanticSearch && semanticQuery && selectedJob) {
         queryParams.set('query', semanticQuery);
       }
 
@@ -96,6 +98,10 @@ export default function RecruiterCandidates() {
       if (response.ok) {
         const data = await response.json();
         setCandidates(data.candidates || []);
+        if (data.fallback_used) {
+          setSyncStatus('Showing fallback student list');
+          setTimeout(() => setSyncStatus(''), 3000);
+        }
       }
     } catch (error) {
       console.error('Error searching candidates:', error);
@@ -319,7 +325,7 @@ export default function RecruiterCandidates() {
             </AnimatePresence>
 
             <div className="flex gap-4 mt-6">
-              <button onClick={applyFilters} disabled={!selectedJob || loading} className="px-5 py-2.5 bg-white text-black hover:bg-gray-200 rounded-xl font-bold transition-colors flex-1">
+              <button onClick={applyFilters} disabled={loading} className="px-5 py-2.5 bg-white text-black hover:bg-gray-200 rounded-xl font-bold transition-colors flex-1">
                 {loading ? 'Searching...' : 'Search Candidates'}
               </button>
               <button onClick={clearFilters} className="px-5 py-2.5 bg-white/5 text-white border border-white/10 hover:bg-white/10 rounded-xl font-bold transition-colors">Clear Filters</button>
@@ -338,7 +344,7 @@ export default function RecruiterCandidates() {
           ) : candidates.length === 0 ? (
             <div className="text-center py-20 glass-panel border border-white/5">
               <p className="text-gray-400 text-lg font-bold">
-                {selectedJob ? 'No candidates match your criteria' : 'Select a job to view candidates'}
+                {selectedJob ? 'No candidates match your criteria' : 'No students found yet'}
               </p>
             </div>
           ) : (
@@ -352,6 +358,29 @@ export default function RecruiterCandidates() {
                         <div className="flex items-center gap-1"><Mail size={16} className="text-gray-400"/> {candidate.email}</div>
                         <div className="flex items-center gap-1"><GraduationCap size={16} className="text-gray-400"/> {candidate.university}</div>
                         <div className="flex items-center gap-1"><Star size={16} className="text-yellow-400"/> GPA: {candidate.gpa}</div>
+                        <div className="flex items-center gap-1"><Briefcase size={16} className="text-gray-400"/> {candidate.current_year}</div>
+                        {candidate.phone && <div className="flex items-center gap-1"><Phone size={16} className="text-gray-400"/> {candidate.phone}</div>}
+                        {candidate.location && <div className="flex items-center gap-1"><MapPin size={16} className="text-gray-400"/> {candidate.location}</div>}
+                        {candidate.linkedin_url && (
+                          <a href={candidate.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
+                            <ExternalLink size={16} className="text-gray-400"/> LinkedIn
+                          </a>
+                        )}
+                        {candidate.github_username && (
+                          <div className="flex items-center gap-1"><Database size={16} className="text-gray-400"/> {candidate.github_username}</div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {candidate.resume_url && (
+                          <span className="px-3 py-1 bg-white/5 border border-white/10 text-white rounded-lg text-xs font-bold">Resume Uploaded</span>
+                        )}
+                        {candidate.profile_completion !== undefined && (
+                          <span className="px-3 py-1 bg-white/5 border border-white/10 text-white rounded-lg text-xs font-bold">Profile: {candidate.profile_completion}%</span>
+                        )}
+                        {candidate.match_basis === 'profile_completion' && (
+                          <span className="px-3 py-1 bg-white/5 border border-white/10 text-gray-300 rounded-lg text-xs font-bold">Sorted by Profile Completeness</span>
+                        )}
                       </div>
                       
                       <div className="mb-4">
@@ -371,7 +400,9 @@ export default function RecruiterCandidates() {
                         <div className="text-3xl font-extrabold">
                           {Math.round((candidate.match_score * 0.83) + (candidate.retention_score * 0.17))}%
                         </div>
-                        <div className="text-xs font-bold tracking-wider uppercase opacity-90 mt-1">Overall Match</div>
+                        <div className="text-xs font-bold tracking-wider uppercase opacity-90 mt-1">
+                          {selectedJob ? 'Overall Match' : 'Profile Readiness'}
+                        </div>
                       </div>
 
                       {candidate.retention_reasoning && (

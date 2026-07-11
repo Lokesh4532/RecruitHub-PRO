@@ -39,3 +39,7 @@ next-env.d.ts
 
 # AI model cache
 ai-cache/
+
+
+#docs(resume and idcard)
+public/uploads/
