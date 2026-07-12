@@ -5,6 +5,9 @@ import connectDB from '@/lib/mongodb';
 import Student from '@/models/Student';
 import { syncAllCandidatesToChroma, getChromaStats } from '@/lib/chromadb';
 
+export const dynamic = 'force-dynamic';
+
+
 /**
  * Sync all students to ChromaDB
  * POST /api/chroma/sync

@@ -6,6 +6,9 @@ import Student from '@/models/Student';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request) {
   try {
     const cookieStore = cookies();

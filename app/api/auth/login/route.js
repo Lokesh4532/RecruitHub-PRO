@@ -5,6 +5,9 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request) {
   try {
     const { email, password, role } = await request.json();

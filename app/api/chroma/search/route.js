@@ -8,6 +8,9 @@ import { searchCandidatesInChroma } from '@/lib/chromadb';
 import Groq from 'groq-sdk';
 import { calculateSemanticSkillMatch } from '@/lib/skillSemantics';
 
+export const dynamic = 'force-dynamic';
+
+
 // Initialize Groq AI
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -126,10 +129,12 @@ export async function GET(request) {
         }
 
         // Semantic similarity score from ChromaDB.
-        // Collection uses L2 space: distance range is [0, 2] for normalized vectors.
-        // 0 = identical, 2 = opposite → convert to 0-100%
-        const semanticDistance = chromaResults.distances[index] ?? 2;
-        const semanticScore = Math.round(Math.max(0, ((2 - semanticDistance) / 2) * 100));
+        // Collection uses L2 space (squared L2 distance).
+        // For normalized vectors, squared L2 distance range is [0, 4].
+        // 0 = identical, 2 = orthogonal, 4 = opposite.
+        // Convert mapping to 0-100% properly over the [0, 4] range to preserve ranking without clipping.
+        const semanticDistance = chromaResults.distances[index] ?? 4;
+        const semanticScore = Math.round(Math.max(0, ((4 - semanticDistance) / 4) * 100));
 
         // Combined match score: 50% skills + 50% semantic similarity
         const combinedMatchScore = requiredSkills.length > 0

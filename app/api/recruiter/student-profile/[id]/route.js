@@ -4,6 +4,9 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import Student from '@/models/Student';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET(request, { params }) {
   try {
     const cookieStore = cookies();
@@ -34,13 +37,18 @@ export async function GET(request, { params }) {
     const username = student.github_username || student.github_data?.username;
 
     if (username) {
+      const githubHeaders = {
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'RecruitHirePro'
+      };
+      if (process.env.GITHUB_TOKEN) {
+        githubHeaders['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+      }
+
       try {
         // Fetch GitHub User Data
         const userResponse = await fetch(`https://api.github.com/users/${username}`, {
-          headers: {
-            'Accept': 'application/vnd.github.v3+json',
-            'User-Agent': 'RecruitHirePro'
-          }
+          headers: githubHeaders
         });
 
         if (userResponse.ok) {
@@ -48,10 +56,7 @@ export async function GET(request, { params }) {
 
           // Fetch Repositories
           const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?per_page=100`, {
-            headers: {
-              'Accept': 'application/vnd.github.v3+json',
-              'User-Agent': 'RecruitHirePro'
-            }
+            headers: githubHeaders
           });
 
           const repos = await reposResponse.json();
@@ -101,10 +106,7 @@ export async function GET(request, { params }) {
 
           // Fetch Events (for commit count approximation)
           const eventsResponse = await fetch(`https://api.github.com/users/${username}/events?per_page=100`, {
-            headers: {
-              'Accept': 'application/vnd.github.v3+json',
-              'User-Agent': 'RecruitHirePro'
-            }
+            headers: githubHeaders
           });
 
           const events = await eventsResponse.json();

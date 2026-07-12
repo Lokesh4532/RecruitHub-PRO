@@ -7,6 +7,9 @@ import Student from '@/models/Student';
 import User from '@/models/User';
 import Application from '@/models/Application';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET() {
   try {
     const cookieStore = cookies();

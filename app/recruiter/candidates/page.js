@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Filter, ChevronDown, ChevronUp, Star, MapPin, 
   GraduationCap, Mail, Phone, ExternalLink, RefreshCw,
-  BrainCircuit, Database, X, Check, ArrowRight
+  BrainCircuit, Database, X, Check, ArrowRight, Briefcase
 } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import PageTransition from '@/components/PageTransition';

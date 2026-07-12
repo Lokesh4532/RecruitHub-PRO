@@ -9,6 +9,9 @@ import Groq from 'groq-sdk';
 import { calculateSemanticSkillMatch } from '@/lib/skillSemantics';
 import { getRedisClient } from '@/lib/redis';
 
+export const dynamic = 'force-dynamic';
+
+
 // Initialize Groq AI
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -48,11 +51,10 @@ export async function GET(request) {
     
     if (redis && redis.isOpen) {
       const cachedResults = await redis.get(cacheKey);
-      // Temporarily bypassing cache read so we can test the new Groq API!
-      // if (cachedResults) {
-      //   console.log('⚡ Serving recruiter search results from Redis Cache');
-      //   return NextResponse.json(JSON.parse(cachedResults));
-      // }
+      if (cachedResults) {
+        console.log('⚡ Serving recruiter search results from Redis Cache');
+        return NextResponse.json(JSON.parse(cachedResults));
+      }
     }
 
     // 2. SLOW PATH: If not in cache, query MongoDB and hit Gemini APIs

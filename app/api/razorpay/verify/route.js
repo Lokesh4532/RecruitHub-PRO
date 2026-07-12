@@ -9,7 +9,7 @@ export async function POST(request) {
     // Verify the payment signature to ensure it's authentic and not tampered with
     const body = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.NEXT_PUBLIC_KEY_SECRET || process.env.RAZORPAY_SECRET)
+      .createHmac('sha256', process.env.RAZORPAY_SECRET)
       .update(body.toString())
       .digest('hex');
 

@@ -4,6 +4,9 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import Job from '@/models/Job';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET() {
   try {
     const cookieStore = cookies();

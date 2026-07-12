@@ -7,6 +7,9 @@ import connectDB from '@/lib/mongodb';
 import Student from '@/models/Student';
 import User from '@/models/User';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request) {
   try {
     const cookieStore = cookies();

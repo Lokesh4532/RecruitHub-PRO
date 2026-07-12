@@ -5,6 +5,9 @@ import { Octokit } from '@octokit/rest';
 import connectDB from '@/lib/mongodb';
 import Student from '@/models/Student';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request) {
   try {
     const cookieStore = cookies();

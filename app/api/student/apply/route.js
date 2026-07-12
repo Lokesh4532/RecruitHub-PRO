@@ -6,6 +6,9 @@ import Student from '@/models/Student';
 import Job from '@/models/Job';
 import Application from '@/models/Application';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request) {
   try {
     const cookieStore = cookies();

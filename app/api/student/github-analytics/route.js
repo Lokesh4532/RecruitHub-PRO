@@ -4,6 +4,9 @@ import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
+
 export async function GET(request) {
   try {
     const cookieStore = cookies();
@@ -29,12 +32,17 @@ export async function GET(request) {
 
     const username = student.github_username || student.github_data?.username;
 
+    const githubHeaders = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'RecruitHirePro'
+    };
+    if (process.env.GITHUB_TOKEN) {
+      githubHeaders['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+
     // Fetch GitHub User Data
     const userResponse = await fetch(`https://api.github.com/users/${username}`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'RecruitHirePro'
-      }
+      headers: githubHeaders
     });
 
     if (!userResponse.ok) {
@@ -45,10 +53,7 @@ export async function GET(request) {
 
     // Fetch Repositories
     const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?per_page=100`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'RecruitHirePro'
-      }
+      headers: githubHeaders
     });
 
     const repos = await reposResponse.json();
@@ -98,10 +103,7 @@ export async function GET(request) {
 
     // Fetch Events (for commit count approximation)
     const eventsResponse = await fetch(`https://api.github.com/users/${username}/events?per_page=100`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'RecruitHirePro'
-      }
+      headers: githubHeaders
     });
 
     const events = await eventsResponse.json();
@@ -110,10 +112,7 @@ export async function GET(request) {
 
     // Fetch Organizations
     const orgsResponse = await fetch(`https://api.github.com/users/${username}/orgs`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'RecruitHirePro'
-      }
+      headers: githubHeaders
     });
 
     const orgs = await orgsResponse.json();

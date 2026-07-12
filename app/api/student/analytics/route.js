@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { verify } from 'jsonwebtoken';
 import dbConnect from '@/lib/mongodb';
+export const dynamic = "force-dynamic";
+
 import Student from '@/models/Student';
 import Application from '@/models/Application';
 import Job from '@/models/Job';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function GET(request) {
   try {

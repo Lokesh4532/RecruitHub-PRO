@@ -8,7 +8,7 @@ export async function POST(request) {
 
     const instance = new Razorpay({
       key_id: process.env.NEXT_PUBLIC_KEY_ID, 
-      key_secret: process.env.NEXT_PUBLIC_KEY_SECRET || process.env.RAZORPAY_SECRET,
+      key_secret: process.env.RAZORPAY_SECRET,
     });
 
     const options = {

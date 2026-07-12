@@ -4,6 +4,9 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import Shortlist from '@/models/Shortlist';
 
+export const dynamic = 'force-dynamic';
+
+
 // GET - Fetch shortlisted candidates
 export async function GET() {
   try {
